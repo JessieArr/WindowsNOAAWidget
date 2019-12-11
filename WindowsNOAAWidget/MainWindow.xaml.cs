@@ -1,13 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using WindowsNOAAWidget.Models;
 using WindowsNOAAWidget.Services;
 
 namespace WindowsNOAAWidget
@@ -19,6 +16,8 @@ namespace WindowsNOAAWidget
     {
         private Timer _UpdateTimer;
         private NOAAClient _Client;
+        private OptionsService _OptionsService;
+        private ApplicationOptions _ApplicationOptions;
 
         public MainWindow()
         {
@@ -29,6 +28,11 @@ namespace WindowsNOAAWidget
             _UpdateTimer.Enabled = true;
 
             _Client = new NOAAClient();
+            _OptionsService = new OptionsService();
+            _ApplicationOptions = _OptionsService.LoadSavedOptions();
+
+            LatitudeTextBox.Text = _ApplicationOptions.SelectedLatitude.ToString();
+            LongitudeTextBox.Text = _ApplicationOptions.SelectedLongitude.ToString();
 
             SetIcon();
         }
@@ -47,6 +51,19 @@ namespace WindowsNOAAWidget
                 Double.TryParse(LatitudeTextBox.Text, out latitude);
                 Double.TryParse(LongitudeTextBox.Text, out longitude);
 
+                if(latitude != _ApplicationOptions.SelectedLatitude 
+                    || longitude != _ApplicationOptions.SelectedLongitude)
+                {
+                    _ApplicationOptions.SelectedLatitude = latitude;
+                    _ApplicationOptions.SelectedLongitude = longitude;
+                    _OptionsService.SaveOptions(_ApplicationOptions);
+                }
+
+                if(latitude == 0 && longitude == 0)
+                {
+                    // No point has been entered, so we wait.
+                    return;
+                }
                 var pointInfo = await _Client.GetHourlyForecastForPoint(latitude, longitude);
                 var firstPeriod = pointInfo.Properties["periods"][0];
 
@@ -91,6 +108,17 @@ namespace WindowsNOAAWidget
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             SetIcon();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+            e.Cancel = true;
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
     }
 }
