@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsNOAAWidget", "WindowsNOAAWidget.csproj", "{B3906925-4987-4C4C-B700-42BCBF5498C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsNOAAWidget.Test", "..\WindowsNOAAWidget.Test\WindowsNOAAWidget.Test.csproj", "{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3906925-4987-4C4C-B700-42BCBF5498C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3906925-4987-4C4C-B700-42BCBF5498C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3906925-4987-4C4C-B700-42BCBF5498C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3906925-4987-4C4C-B700-42BCBF5498C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7AEA19F4-F7DE-45D8-BE37-F9E4485E15D1}
+	EndGlobalSection
+EndGlobal
