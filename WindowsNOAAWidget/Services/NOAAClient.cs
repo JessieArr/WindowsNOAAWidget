@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -38,6 +39,25 @@ namespace WindowsNOAAWidget.Services
             var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}/forecast");
             var response = await result.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<PointResponse>(response);
+        }
+
+        public async Task<PointResponse> GetHourlyForecastForPoint(double lat, double lon)
+        {
+            var header = new ProductHeaderValue("WindowsNOAAWidget");
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
+            var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}/forecast/hourly");
+            var response = await result.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<PointResponse>(response);
+        }
+
+        public async Task<JObject> GetCountyZones()
+        {
+            var header = new ProductHeaderValue("WindowsNOAAWidget");
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
+            var result = await _httpClient.GetAsync($"https://api.weather.gov/zones?type=county");
+            var response = await result.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<JObject>(response);
+
         }
 
         public async Task<Bitmap> GetImage(string url)

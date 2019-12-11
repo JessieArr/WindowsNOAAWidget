@@ -61,6 +61,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Models\NOAA\PointResponse.cs" />
+    <Compile Include="Services\GeographyService.cs" />
     <Compile Include="Services\NOAAClient.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -7,6 +7,17 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="LatitudeTextBox" Grid.Row="0" Grid.Column="0">39.7456</TextBox>
+        <TextBox x:Name="LongitudeTextBox" Grid.Row="0" Grid.Column="1">-97.0892</TextBox>
+        <Button x:Name="UpdateButton" Grid.Row="0" Grid.Column="2" Click="Button_Click">Update</Button>
     </Grid>
 </Window>
