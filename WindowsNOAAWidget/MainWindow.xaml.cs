@@ -34,6 +34,9 @@ namespace WindowsNOAAWidget
             LatitudeTextBox.Text = _ApplicationOptions.SelectedLatitude.ToString();
             LongitudeTextBox.Text = _ApplicationOptions.SelectedLongitude.ToString();
 
+            ErrorHelper.ErrorLabel = ErrorText;
+            ErrorHelper.EmitError("Errors will appear here.");
+
             SetIcon();
         }
 

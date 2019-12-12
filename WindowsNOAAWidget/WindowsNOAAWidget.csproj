@@ -62,6 +62,7 @@
     </ApplicationDefinition>
     <Compile Include="Models\ApplicationOptions.cs" />
     <Compile Include="Models\NOAA\PointResponse.cs" />
+    <Compile Include="Services\ErrorHelper.cs" />
     <Compile Include="Services\GeographyService.cs" />
     <Compile Include="Services\NOAAClient.cs" />
     <Compile Include="Services\OptionsService.cs" />
