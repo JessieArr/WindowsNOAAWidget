@@ -43,11 +43,18 @@ namespace WindowsNOAAWidget.Services
 
         public async Task<PointResponse> GetHourlyForecastForPoint(double lat, double lon)
         {
-            var header = new ProductHeaderValue("WindowsNOAAWidget");
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
-            var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}/forecast/hourly");
-            var response = await result.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<PointResponse>(response);
+            try
+            {
+                var header = new ProductHeaderValue("WindowsNOAAWidget");
+                _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
+                var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}/forecast/hourly");
+                var response = await result.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<PointResponse>(response);
+            }catch(Exception ex)
+            {
+                ErrorHelper.EmitError("ERROR: " + ex.Message);
+                return null;
+            }
         }
 
         public async Task<JObject> GetCountyZones()

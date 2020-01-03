@@ -18,6 +18,7 @@ namespace WindowsNOAAWidget
         private NOAAClient _Client;
         private OptionsService _OptionsService;
         private ApplicationOptions _ApplicationOptions;
+        private string _MostRecentTemperature;
 
         public MainWindow()
         {
@@ -68,26 +69,52 @@ namespace WindowsNOAAWidget
                     return;
                 }
                 var pointInfo = await _Client.GetHourlyForecastForPoint(latitude, longitude);
+                if(pointInfo == null || pointInfo.Properties == null)
+                {
+                    return;
+                }
                 var firstPeriod = pointInfo.Properties["periods"][0];
 
                 var temperature = firstPeriod["temperature"].ToString();
+                var forecastDescription = firstPeriod["shortForecast"].ToString();
+                var isDayTime = String.Equals(firstPeriod["isDaytime"].ToString(), "true", StringComparison.OrdinalIgnoreCase);
+                // If the last temperature was different from this one, we update our icon and window title.
+                if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
+                {
+                    _MostRecentTemperature = temperature;
+                    var iconUri = new Uri("https://api.weather.gov/icons/land/day/few?size=medium", UriKind.RelativeOrAbsolute);
 
-                //var iconUri = new Uri("pack://application:,,,/Images/sunny.png", UriKind.RelativeOrAbsolute);
-                var iconUri = new Uri("https://api.weather.gov/icons/land/day/few?size=medium", UriKind.RelativeOrAbsolute);
-                var bmp = new Bitmap("./Images/sunny.png");
+                    Bitmap bmp = null;
+                    var lowercaseForecast = forecastDescription.ToLower();
+                    if(lowercaseForecast.Contains("cloudy") || lowercaseForecast.Contains("fog"))
+                    {
+                        bmp = new Bitmap("./Images/cloudy.png");
+                    }
+                    if(bmp == null)
+                    {
+                        if(isDayTime)
+                        {
+                            bmp = new Bitmap("./Images/sunny.png");
+                        }
+                        else
+                        {
+                            bmp = new Bitmap("./Images/moon.png");
+                        }
+                    }
 
-                //var bmp = await _Client.GetImage(firstPeriod["icon"].ToString());
+                    //var bmp = await _Client.GetImage(firstPeriod["icon"].ToString());
 
-                AddText(bmp, temperature);
+                    AddText(bmp, temperature);
 
-                var iconForBitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                    bmp.GetHbitmap(),
-                    IntPtr.Zero,
-                    Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions());
+                    var iconForBitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                        bmp.GetHbitmap(),
+                        IntPtr.Zero,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
 
-                this.Icon = iconForBitmap;
-                this.Title = $"{temperature}° - {firstPeriod["shortForecast"]}";
+                    this.Icon = iconForBitmap;
+                    this.Title = $"{temperature}° - {forecastDescription}";
+                }
             }));
         }
 
