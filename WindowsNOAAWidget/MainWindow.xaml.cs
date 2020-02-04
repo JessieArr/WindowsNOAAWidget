@@ -17,6 +17,7 @@ namespace WindowsNOAAWidget
         private Timer _UpdateTimer;
         private NOAAClient _Client;
         private OptionsService _OptionsService;
+        private GeographyService _GeographyService;
         private ApplicationOptions _ApplicationOptions;
         private string _MostRecentTemperature;
 
@@ -31,12 +32,15 @@ namespace WindowsNOAAWidget
             _Client = new NOAAClient();
             _OptionsService = new OptionsService();
             _ApplicationOptions = _OptionsService.LoadSavedOptions();
+            _GeographyService = new GeographyService();
 
             LatitudeTextBox.Text = _ApplicationOptions.SelectedLatitude.ToString();
             LongitudeTextBox.Text = _ApplicationOptions.SelectedLongitude.ToString();
 
             ErrorHelper.ErrorLabel = ErrorText;
             ErrorHelper.EmitError("Errors will appear here.");
+
+            //_GeographyService.GetZipCodeInfo();
 
             SetIcon();
         }
