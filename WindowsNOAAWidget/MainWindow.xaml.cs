@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -34,13 +35,13 @@ namespace WindowsNOAAWidget
             _ApplicationOptions = _OptionsService.LoadSavedOptions();
             _GeographyService = new GeographyService();
 
-            LatitudeTextBox.Text = _ApplicationOptions.SelectedLatitude.ToString();
-            LongitudeTextBox.Text = _ApplicationOptions.SelectedLongitude.ToString();
+            if(_ApplicationOptions.SelectedZip != null)
+            {
+                ZipTextBox.Text = _ApplicationOptions.SelectedZip.Zip.ToString();
+            }
 
             ErrorHelper.ErrorLabel = ErrorText;
             ErrorHelper.EmitError("Errors will appear here.");
-
-            //_GeographyService.GetZipCodeInfo();
 
             SetIcon();
         }
@@ -54,71 +55,81 @@ namespace WindowsNOAAWidget
         {
             Dispatcher.InvokeAsync(new Action(async () =>
             {
-                double latitude = 0;
-                double longitude = 0;
-                Double.TryParse(LatitudeTextBox.Text, out latitude);
-                Double.TryParse(LongitudeTextBox.Text, out longitude);
-
-                if(latitude != _ApplicationOptions.SelectedLatitude 
-                    || longitude != _ApplicationOptions.SelectedLongitude)
+                int zip = 0;
+                var wasInt = Int32.TryParse(ZipTextBox.Text, out zip);
+                if(!wasInt)
                 {
-                    _ApplicationOptions.SelectedLatitude = latitude;
-                    _ApplicationOptions.SelectedLongitude = longitude;
+                    // Not a zip code
+                    return;
+                }
+
+                if(_ApplicationOptions.SelectedZip == null || zip != _ApplicationOptions.SelectedZip.Zip)
+                {
+                    var allZipCodes = _GeographyService.GetZipCodeInfo();
+                    var thisZipCode = allZipCodes.FirstOrDefault(x => x.Zip == zip);
+                    if(thisZipCode == null)
+                    {
+                        // Invalid zip code
+                        return;
+                    }
+
+                    _ApplicationOptions.SelectedZip = thisZipCode;
                     _OptionsService.SaveOptions(_ApplicationOptions);
                 }
-
-                if(latitude == 0 && longitude == 0)
+                try
                 {
-                    // No point has been entered, so we wait.
-                    return;
-                }
-                var pointInfo = await _Client.GetHourlyForecastForPoint(latitude, longitude);
-                if(pointInfo == null || pointInfo.Properties == null)
-                {
-                    return;
-                }
-                var firstPeriod = pointInfo.Properties["periods"][0];
-
-                var temperature = firstPeriod["temperature"].ToString();
-                var forecastDescription = firstPeriod["shortForecast"].ToString();
-                var isDayTime = String.Equals(firstPeriod["isDaytime"].ToString(), "true", StringComparison.OrdinalIgnoreCase);
-                // If the last temperature was different from this one, we update our icon and window title.
-                if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
-                {
-                    _MostRecentTemperature = temperature;
-                    var iconUri = new Uri("https://api.weather.gov/icons/land/day/few?size=medium", UriKind.RelativeOrAbsolute);
-
-                    Bitmap bmp = null;
-                    var lowercaseForecast = forecastDescription.ToLower();
-                    if(lowercaseForecast.Contains("cloudy") || lowercaseForecast.Contains("fog"))
+                    var pointInfo = await _Client.GetHourlyForecastForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
+                    if (pointInfo == null || pointInfo.Properties == null)
                     {
-                        bmp = new Bitmap("./Images/cloudy.png");
+                        return;
                     }
-                    if(bmp == null)
+                    var firstPeriod = pointInfo.Properties["periods"][0];
+
+                    var temperature = firstPeriod["temperature"].ToString();
+                    var forecastDescription = firstPeriod["shortForecast"].ToString();
+                    var isDayTime = String.Equals(firstPeriod["isDaytime"].ToString(), "true", StringComparison.OrdinalIgnoreCase);
+                    // If the last temperature was different from this one, we update our icon and window title.
+                    if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
                     {
-                        if(isDayTime)
+                        _MostRecentTemperature = temperature;
+                        var iconUri = new Uri("https://api.weather.gov/icons/land/day/few?size=medium", UriKind.RelativeOrAbsolute);
+
+                        Bitmap bmp = null;
+                        var lowercaseForecast = forecastDescription.ToLower();
+                        if (lowercaseForecast.Contains("cloudy") || lowercaseForecast.Contains("fog"))
                         {
-                            bmp = new Bitmap("./Images/sunny.png");
+                            bmp = new Bitmap("./Images/cloudy.png");
                         }
-                        else
+                        if (bmp == null)
                         {
-                            bmp = new Bitmap("./Images/moon.png");
+                            if (isDayTime)
+                            {
+                                bmp = new Bitmap("./Images/sunny.png");
+                            }
+                            else
+                            {
+                                bmp = new Bitmap("./Images/moon.png");
+                            }
                         }
+
+                        //var bmp = await _Client.GetImage(firstPeriod["icon"].ToString());
+
+                        AddText(bmp, temperature);
+
+                        var iconForBitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                            bmp.GetHbitmap(),
+                            IntPtr.Zero,
+                            Int32Rect.Empty,
+                            BitmapSizeOptions.FromEmptyOptions());
+
+                        this.Icon = iconForBitmap;
+                        this.Title = $"{temperature}° - {forecastDescription}";
                     }
-
-                    //var bmp = await _Client.GetImage(firstPeriod["icon"].ToString());
-
-                    AddText(bmp, temperature);
-
-                    var iconForBitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                        bmp.GetHbitmap(),
-                        IntPtr.Zero,
-                        Int32Rect.Empty,
-                        BitmapSizeOptions.FromEmptyOptions());
-
-                    this.Icon = iconForBitmap;
-                    this.Title = $"{temperature}° - {forecastDescription}";
                 }
+                catch(Exception ex)
+                {
+                    ErrorHelper.EmitError("ERROR: " + ex.Message);
+                }                
             }));
         }
 
