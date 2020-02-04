@@ -60,6 +60,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Geolocation\GeoDataImporter.cs" />
+    <Compile Include="Geolocation\ZipCodeDetails.cs" />
+    <Compile Include="Geolocation\ZipCodeInfo.cs" />
     <Compile Include="Models\ApplicationOptions.cs" />
     <Compile Include="Models\NOAA\PointResponse.cs" />
     <Compile Include="Services\ErrorHelper.cs" />
@@ -97,6 +100,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Geolocation\zip-info.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -25,8 +25,7 @@
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <TextBox x:Name="LatitudeTextBox" Grid.Row="0" Grid.Column="0">39.7456</TextBox>
-            <TextBox x:Name="LongitudeTextBox" Grid.Row="0" Grid.Column="1">-97.0892</TextBox>
+            <TextBox x:Name="ZipTextBox" Grid.Row="0" Grid.Column="0" >Enter Zip Code</TextBox>
             <Button x:Name="UpdateButton" Grid.Row="0" Grid.Column="2" Click="Button_Click">Update</Button>
             <Label x:Name="ErrorText" Grid.Row="2"></Label>
         </Grid>
