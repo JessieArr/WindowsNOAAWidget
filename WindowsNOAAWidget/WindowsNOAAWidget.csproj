@@ -65,10 +65,14 @@
     <Compile Include="Geolocation\ZipCodeInfo.cs" />
     <Compile Include="Models\ApplicationOptions.cs" />
     <Compile Include="Models\NOAA\PointResponse.cs" />
+    <Compile Include="Models\Pollen\PollenForecastLocation.cs" />
+    <Compile Include="Models\Pollen\PollenForecastPeriod.cs" />
+    <Compile Include="Models\Pollen\PollenForecastResponse.cs" />
     <Compile Include="Services\ErrorHelper.cs" />
     <Compile Include="Services\GeographyService.cs" />
     <Compile Include="Services\NOAAClient.cs" />
     <Compile Include="Services\OptionsService.cs" />
+    <Compile Include="Services\PollenClient.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

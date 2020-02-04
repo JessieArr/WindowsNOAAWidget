@@ -16,7 +16,8 @@ namespace WindowsNOAAWidget
     public partial class MainWindow : Window
     {
         private Timer _UpdateTimer;
-        private NOAAClient _Client;
+        private NOAAClient _NOAAClient;
+        private PollenClient _PollenClient;
         private OptionsService _OptionsService;
         private GeographyService _GeographyService;
         private ApplicationOptions _ApplicationOptions;
@@ -30,7 +31,8 @@ namespace WindowsNOAAWidget
             _UpdateTimer.AutoReset = true;
             _UpdateTimer.Enabled = true;
 
-            _Client = new NOAAClient();
+            _NOAAClient = new NOAAClient();
+            _PollenClient = new PollenClient();
             _OptionsService = new OptionsService();
             _ApplicationOptions = _OptionsService.LoadSavedOptions();
             _GeographyService = new GeographyService();
@@ -44,11 +46,25 @@ namespace WindowsNOAAWidget
             ErrorHelper.EmitError("Errors will appear here.");
 
             SetIcon();
+            UpdatePollenForecast();
         }
 
         private void _UpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             SetIcon();
+            UpdatePollenForecast();
+        }
+
+        private void UpdatePollenForecast()
+        {
+            Dispatcher.InvokeAsync(new Action(async () =>
+            {
+                if(_ApplicationOptions.SelectedZip != null)
+                {
+                    var pollenForecast = await _PollenClient.GetPollenDataForZip(_ApplicationOptions.SelectedZip.Zip);
+                    PollenIndex.Content = "Pollen Index: " + pollenForecast.Location.Periods.First().Index;
+                }
+            }));
         }
 
         private void SetIcon()
@@ -78,7 +94,7 @@ namespace WindowsNOAAWidget
                 }
                 try
                 {
-                    var pointInfo = await _Client.GetHourlyForecastForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
+                    var pointInfo = await _NOAAClient.GetHourlyForecastForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
                     if (pointInfo == null || pointInfo.Properties == null)
                     {
                         return;
