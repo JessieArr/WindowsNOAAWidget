@@ -186,7 +186,8 @@ namespace WindowsNOAAWidget
         private void Startup_Click(object sender, RoutedEventArgs e)
         {
             var startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            var bootstrapperPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "WindowsNOAABootstrapper.exe";
+            var applicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var bootstrapperPath = Path.Combine(applicationPath, "WindowsNOAABootstrapper.exe");
             WindowsShortcutService.CreateShortcut("WindowsNOAAWidget", startupPath, bootstrapperPath);
         }
 
