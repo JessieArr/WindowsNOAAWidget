@@ -20,13 +20,13 @@ namespace WindowsNOAAWidget
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
                 var ex = args.ExceptionObject as Exception;
-                ErrorHelper.EmitError(ex.Message);
+                ErrorHelper.EmitError(ex);
             };
 
             AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
             {
                 var ex = args.Exception;
-                ErrorHelper.EmitError(ex.Message);
+                ErrorHelper.EmitError(ex);
             };
         }
     }
