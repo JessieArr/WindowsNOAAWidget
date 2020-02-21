@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Timers;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -179,6 +181,13 @@ namespace WindowsNOAAWidget
         {
             WindowState = WindowState.Minimized;
             e.Cancel = true;
+        }
+
+        private void Startup_Click(object sender, RoutedEventArgs e)
+        {
+            var startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+            var bootstrapperPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "WindowsNOAABootstrapper.exe";
+            WindowsShortcutService.CreateShortcut("WindowsNOAAWidget", startupPath, bootstrapperPath);
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)
