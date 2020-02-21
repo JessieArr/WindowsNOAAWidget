@@ -118,19 +118,20 @@ namespace WindowsNOAAWidget
 
                         Bitmap bmp = null;
                         var lowercaseForecast = forecastDescription.ToLower();
+                        var applicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                         if (lowercaseForecast.Contains("cloudy") || lowercaseForecast.Contains("fog"))
                         {
-                            bmp = new Bitmap("./Images/cloudy.png");
+                            bmp = new Bitmap(Path.Combine(applicationPath, "Images/cloudy.png"));
                         }
                         if (bmp == null)
                         {
                             if (isDayTime)
                             {
-                                bmp = new Bitmap("./Images/sunny.png");
+                                bmp = new Bitmap(Path.Combine(applicationPath, "Images/sunny.png"));
                             }
                             else
                             {
-                                bmp = new Bitmap("./Images/moon.png");
+                                bmp = new Bitmap(Path.Combine(applicationPath, "Images/moon.png"));
                             }
                         }
 
@@ -150,7 +151,7 @@ namespace WindowsNOAAWidget
                 }
                 catch(Exception ex)
                 {
-                    ErrorHelper.EmitError("ERROR: " + ex.Message);
+                    ErrorHelper.EmitError(ex);
                 }                
             }));
         }

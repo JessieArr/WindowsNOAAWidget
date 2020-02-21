@@ -52,7 +52,7 @@ namespace WindowsNOAAWidget.Services
                 return JsonConvert.DeserializeObject<PointResponse>(response);
             }catch(Exception ex)
             {
-                ErrorHelper.EmitError("ERROR: " + ex.Message);
+                ErrorHelper.EmitError(ex);
                 return null;
             }
         }
