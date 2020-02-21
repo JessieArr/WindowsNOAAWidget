@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsNOAAWidget", "WindowsNOAAWidget.csproj", "{B3906925-4987-4C4C-B700-42BCBF5498C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsNOAAWidget.Test", "..\WindowsNOAAWidget.Test\WindowsNOAAWidget.Test.csproj", "{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WindowsNOAAWidget.Test", "..\WindowsNOAAWidget.Test\WindowsNOAAWidget.Test.csproj", "{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsNOAABootstrapper", "..\WindowsNOAABootstrapper\WindowsNOAABootstrapper.csproj", "{FC046272-EBD0-4A56-9F61-4D8C044A04B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{619B5800-2DBC-40DF-97E4-F9DB66A3CB26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC046272-EBD0-4A56-9F61-4D8C044A04B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC046272-EBD0-4A56-9F61-4D8C044A04B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC046272-EBD0-4A56-9F61-4D8C044A04B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC046272-EBD0-4A56-9F61-4D8C044A04B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
