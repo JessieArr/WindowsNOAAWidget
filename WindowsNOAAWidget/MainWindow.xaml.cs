@@ -62,6 +62,10 @@ namespace WindowsNOAAWidget
                 if(_ApplicationOptions.SelectedZip != null)
                 {
                     var pollenForecast = await _PollenClient.GetPollenDataForZip(_ApplicationOptions.SelectedZip.Zip);
+                    if(!pollenForecast.Location.Periods.Any())
+                    {
+                        return;
+                    }
                     PollenIndex.Content = "Pollen Index: " + pollenForecast.Location.Periods.First().Index;
                 }
             }));
