@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using WindowsNOAAWidget.Models;
@@ -11,13 +12,16 @@ namespace WindowsNOAAWidget.Services
 {
     public class OptionsService
     {
-        private string _FilePath = "autosave.json";
+        private string _FileName = "autosave.json";
 
         public ApplicationOptions LoadSavedOptions()
         {
-            if (File.Exists(_FilePath))
+            var applicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var optionsFilePath = Path.Combine(applicationPath, _FileName);
+
+            if (File.Exists(optionsFilePath))
             {
-                var serialized = File.ReadAllText(_FilePath);
+                var serialized = File.ReadAllText(optionsFilePath);
                 var deserialized = JsonConvert.DeserializeObject<ApplicationOptions>(serialized);
                 return deserialized;
             }
@@ -30,7 +34,10 @@ namespace WindowsNOAAWidget.Services
         public void SaveOptions(ApplicationOptions options)
         {
             var serialized = JsonConvert.SerializeObject(options);
-            File.WriteAllText(_FilePath, serialized);
+            var applicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var optionsFilePath = Path.Combine(applicationPath, _FileName);
+
+            File.WriteAllText(optionsFilePath, serialized);
         }
     }
 }
