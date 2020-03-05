@@ -6,8 +6,11 @@ using System.Linq;
 using System.Reflection;
 using System.Timers;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using WindowsNOAAWidget.Models;
+using WindowsNOAAWidget.Models.NOAA;
+using WindowsNOAAWidget.Models.Pollen;
 using WindowsNOAAWidget.Services;
 
 namespace WindowsNOAAWidget
@@ -23,7 +26,12 @@ namespace WindowsNOAAWidget
         private OptionsService _OptionsService;
         private GeographyService _GeographyService;
         private ApplicationOptions _ApplicationOptions;
+        private WeatherIconService _WeatherIconService;
         private string _MostRecentTemperature;
+
+        private PollenForecastResponse _PollenForecast;
+        private TimeSpan _PollenForecastLifetime = new TimeSpan(1, 0, 0);
+        private DateTime _PollenForecastExpires;
 
         public MainWindow()
         {
@@ -38,8 +46,9 @@ namespace WindowsNOAAWidget
             _OptionsService = new OptionsService();
             _ApplicationOptions = _OptionsService.LoadSavedOptions();
             _GeographyService = new GeographyService();
+            _WeatherIconService = new WeatherIconService();
 
-            if(_ApplicationOptions.SelectedZip != null)
+            if (_ApplicationOptions.SelectedZip != null)
             {
                 ZipTextBox.Text = _ApplicationOptions.SelectedZip.Zip.ToString();
             }
@@ -61,14 +70,23 @@ namespace WindowsNOAAWidget
         {
             Dispatcher.InvokeAsync(new Action(async () =>
             {
-                if(_ApplicationOptions.SelectedZip != null)
+                try
                 {
-                    var pollenForecast = await _PollenClient.GetPollenDataForZip(_ApplicationOptions.SelectedZip.Zip);
-                    if(!pollenForecast.Location.Periods.Any())
+                    if (_ApplicationOptions.SelectedZip != null && DateTime.Now > _PollenForecastExpires)
                     {
-                        return;
+                        var pollenForecast = await _PollenClient.GetPollenDataForZip(_ApplicationOptions.SelectedZip.Zip);
+                        if (!pollenForecast.Location.Periods.Any())
+                        {
+                            return;
+                        }
+                        PollenIndex.Content = "Pollen Index: " + pollenForecast.Location.Periods.First().Index;
+                        _PollenForecast = pollenForecast;
+                        _PollenForecastExpires = DateTime.Now + _PollenForecastLifetime;
                     }
-                    PollenIndex.Content = "Pollen Index: " + pollenForecast.Location.Periods.First().Index;
+                }
+                catch (Exception ex)
+                {
+                    ErrorHelper.EmitError(ex);
                 }
             }));
         }
@@ -77,100 +95,151 @@ namespace WindowsNOAAWidget
         {
             Dispatcher.InvokeAsync(new Action(async () =>
             {
-                int zip = 0;
-                var wasInt = Int32.TryParse(ZipTextBox.Text, out zip);
-                if(!wasInt)
+                try
                 {
-                    // Not a zip code
-                    return;
-                }
-
-                if(_ApplicationOptions.SelectedZip == null || zip != _ApplicationOptions.SelectedZip.Zip)
-                {
-                    var allZipCodes = _GeographyService.GetZipCodeInfo();
-                    var thisZipCode = allZipCodes.FirstOrDefault(x => x.Zip == zip);
-                    if(thisZipCode == null)
+                    int zip = 0;
+                    var wasInt = Int32.TryParse(ZipTextBox.Text, out zip);
+                    if (!wasInt)
                     {
-                        // Invalid zip code
+                        // Not a zip code
                         return;
                     }
 
-                    _ApplicationOptions.SelectedZip = thisZipCode;
-                    _OptionsService.SaveOptions(_ApplicationOptions);
-                }
-                try
-                {
+                    if (_ApplicationOptions.SelectedZip == null || zip != _ApplicationOptions.SelectedZip.Zip)
+                    {
+                        var allZipCodes = _GeographyService.GetZipCodeInfo();
+                        var thisZipCode = allZipCodes.FirstOrDefault(x => x.Zip == zip);
+                        if (thisZipCode == null)
+                        {
+                            // Invalid zip code
+                            return;
+                        }
+
+                        _ApplicationOptions.SelectedZip = thisZipCode;
+                        _OptionsService.SaveOptions(_ApplicationOptions);
+                    }
+
                     var pointInfo = await _NOAAClient.GetHourlyForecastForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
                     if (pointInfo == null || pointInfo.Properties == null)
                     {
                         return;
                     }
-                    var firstPeriod = pointInfo.Properties["periods"][0];
 
-                    var temperature = firstPeriod["temperature"].ToString();
-                    var forecastDescription = firstPeriod["shortForecast"].ToString();
-                    var isDayTime = String.Equals(firstPeriod["isDaytime"].ToString(), "true", StringComparison.OrdinalIgnoreCase);
+                    // Populate forecast
+                    var next24Hours = pointInfo.Properties.periods.Take(24);
+                    HourlyForecastStack.Children.Clear();
+                    HourlyForecastStack.Children.Add(GetGridHeader());
+                    foreach (var hour in next24Hours)
+                    {
+                        HourlyForecastStack.Children.Add(GetGridForForecastPeriod(hour));
+                    }
+
+                    var firstPeriod = pointInfo.Properties.periods[0];
+
+                    var temperature = firstPeriod.temperature.ToString();
+                    var forecastDescription = firstPeriod.shortForecast;
+                    var isDayTime = DateTime.Now.TimeOfDay.Hours > 7 && DateTime.Now.TimeOfDay.Hours < 19;
                     // If the last temperature was different from this one, we update our icon and window title.
                     if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
                     {
                         _MostRecentTemperature = temperature;
-                        var iconUri = new Uri("https://api.weather.gov/icons/land/day/few?size=medium", UriKind.RelativeOrAbsolute);
 
-                        Bitmap bmp = null;
-                        var lowercaseForecast = forecastDescription.ToLower();
-                        var applicationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                        if (lowercaseForecast.Contains("cloudy") || lowercaseForecast.Contains("fog"))
+                        var icon = _WeatherIconService.GetWeatherIcon(new WeatherIconInfo()
                         {
-                            bmp = new Bitmap(Path.Combine(applicationPath, "Images/cloudy.png"));
-                        }
-                        if (bmp == null)
-                        {
-                            if (isDayTime)
-                            {
-                                bmp = new Bitmap(Path.Combine(applicationPath, "Images/sunny.png"));
-                            }
-                            else
-                            {
-                                bmp = new Bitmap(Path.Combine(applicationPath, "Images/moon.png"));
-                            }
-                        }
+                            TemperatureInFarenheit = temperature,
+                            ForecastDescription = forecastDescription,
+                            IsDayTime = isDayTime
+                        });
 
-                        //var bmp = await _Client.GetImage(firstPeriod["icon"].ToString());
-
-                        AddText(bmp, temperature);
-
-                        var iconForBitmap = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                            bmp.GetHbitmap(),
-                            IntPtr.Zero,
-                            Int32Rect.Empty,
-                            BitmapSizeOptions.FromEmptyOptions());
-
-                        this.Icon = iconForBitmap;
+                        this.Icon = icon;
                         this.Title = $"{temperature}° - {forecastDescription}";
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     ErrorHelper.EmitError(ex);
-                }                
+                }
             }));
         }
 
-        private void AddText(Bitmap bmp, string text)
+        private Grid GetGridHeader()
         {
-            var fontSize = 45;
-            var rectf = new RectangleF(0, 0, 128, 128);
-            var shadowRect = new RectangleF(5, 5, 128, 128);
+            var newGrid = new Grid();
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(80)
+            });
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(50)
+            });
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(80)
+            });
 
-            var g = Graphics.FromImage(bmp);
+            var timeLabel = new Label();
+            timeLabel.Content = "Time";
+            Grid.SetColumn(timeLabel, 0);
+            newGrid.Children.Add(timeLabel);
 
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            g.DrawString(text, new Font("Tahoma", fontSize), System.Drawing.Brushes.Black, shadowRect);
-            g.DrawString(text, new Font("Tahoma", fontSize), System.Drawing.Brushes.Yellow, rectf);
+            var temperatureLabel = new Label();
+            temperatureLabel.Content = "Temp";
+            Grid.SetColumn(temperatureLabel, 1);
+            newGrid.Children.Add(temperatureLabel);
 
-            g.Flush();
+            var descriptionLabel = new Label();
+            descriptionLabel.Content = "Forecast";
+            Grid.SetColumn(descriptionLabel, 2);
+            newGrid.Children.Add(descriptionLabel);
+
+            var windLabel = new Label();
+            windLabel.Content = "Wind";
+            Grid.SetColumn(windLabel, 3);
+            newGrid.Children.Add(windLabel);
+
+            return newGrid;
+        }
+
+        private Grid GetGridForForecastPeriod(ForecastPeriod period)
+        {
+            var newGrid = new Grid();
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(80)
+            });
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(50)
+            });
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(80)
+            });
+
+            var timeLabel = new Label();
+            timeLabel.Content = period.startTime.ToString("MM/dd htt");
+            Grid.SetColumn(timeLabel, 0);
+            newGrid.Children.Add(timeLabel);
+
+            var temperatureLabel = new Label();
+            temperatureLabel.Content = period.temperature + "°" + period.temperatureUnit;
+            Grid.SetColumn(temperatureLabel, 1);
+            newGrid.Children.Add(temperatureLabel);
+
+            var descriptionLabel = new Label();
+            descriptionLabel.Content = period.shortForecast;
+            Grid.SetColumn(descriptionLabel, 2);
+            newGrid.Children.Add(descriptionLabel);
+
+            var windLabel = new Label();
+            windLabel.Content = $"{period.windDirection} {period.windSpeed}";
+            Grid.SetColumn(windLabel, 3);
+            newGrid.Children.Add(windLabel);
+
+            return newGrid;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

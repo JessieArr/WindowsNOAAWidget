@@ -17,6 +17,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="20"></RowDefinition>
+                <RowDefinition Height="25"></RowDefinition>
                 <RowDefinition></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
@@ -29,7 +30,11 @@
             <TextBox x:Name="ZipTextBox" Grid.Row="0" Grid.Column="0" >Enter Zip Code</TextBox>
             <Button x:Name="UpdateButton" Grid.Row="0" Grid.Column="2" Click="Button_Click">Update</Button>
             <Label x:Name="PollenIndex" Grid.Row="1"></Label>
-            <TextBox x:Name="ErrorText"  Grid.Row="2" Grid.ColumnSpan="3" IsReadOnly="True" ></TextBox>
+            <ScrollViewer Grid.Row="2" Grid.ColumnSpan="2">
+                <StackPanel x:Name="HourlyForecastStack" >
+                </StackPanel>
+            </ScrollViewer>
+            <TextBox x:Name="ErrorText"  Grid.Row="3" Grid.ColumnSpan="3" IsReadOnly="True" ></TextBox>
         </Grid>
-    </DockPanel>    
+    </DockPanel>
 </Window>

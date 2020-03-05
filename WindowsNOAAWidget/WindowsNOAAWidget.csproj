@@ -64,15 +64,19 @@
     <Compile Include="Geolocation\ZipCodeDetails.cs" />
     <Compile Include="Geolocation\ZipCodeInfo.cs" />
     <Compile Include="Models\ApplicationOptions.cs" />
+    <Compile Include="Models\NOAA\ForecastPeriod.cs" />
+    <Compile Include="Models\NOAA\PointProperties.cs" />
     <Compile Include="Models\NOAA\PointResponse.cs" />
     <Compile Include="Models\Pollen\PollenForecastLocation.cs" />
     <Compile Include="Models\Pollen\PollenForecastPeriod.cs" />
     <Compile Include="Models\Pollen\PollenForecastResponse.cs" />
+    <Compile Include="Models\WeatherIconInfo.cs" />
     <Compile Include="Services\ErrorHelper.cs" />
     <Compile Include="Services\GeographyService.cs" />
     <Compile Include="Services\NOAAClient.cs" />
     <Compile Include="Services\OptionsService.cs" />
     <Compile Include="Services\PollenClient.cs" />
+    <Compile Include="Services\WeatherIconService.cs" />
     <Compile Include="Services\WindowsShortcutService.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

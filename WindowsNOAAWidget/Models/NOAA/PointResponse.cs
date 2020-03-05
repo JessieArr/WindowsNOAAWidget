@@ -1,9 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowsNOAAWidget.Models.NOAA
 {
@@ -13,6 +8,6 @@ namespace WindowsNOAAWidget.Models.NOAA
         public string Id { get; set; }
         public string Type { get; set; }
         public JObject Geometry { get; set; }
-        public JObject Properties { get; set; }
+        public PointProperties Properties { get; set; }
     }
 }
