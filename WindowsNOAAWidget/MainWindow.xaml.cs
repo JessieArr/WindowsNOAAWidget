@@ -56,13 +56,13 @@ namespace WindowsNOAAWidget
             ErrorHelper.ErrorLabel = ErrorText;
             ErrorHelper.EmitError("Errors will appear here.");
 
-            SetIcon();
+            GetWeatherForecast();
             UpdatePollenForecast();
         }
 
         private void _UpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            SetIcon();
+            GetWeatherForecast();
             UpdatePollenForecast();
         }
 
@@ -91,7 +91,7 @@ namespace WindowsNOAAWidget
             }));
         }
 
-        private void SetIcon()
+        private void GetWeatherForecast()
         {
             Dispatcher.InvokeAsync(new Action(async () =>
             {
@@ -244,7 +244,7 @@ namespace WindowsNOAAWidget
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            SetIcon();
+            GetWeatherForecast();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
