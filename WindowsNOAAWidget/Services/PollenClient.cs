@@ -24,6 +24,10 @@ namespace WindowsNOAAWidget.Services
             _httpClient.DefaultRequestHeaders.Referrer = new Uri($"https://www.pollen.com/forecast/current/pollen/{zipCode}");
             var result = await _httpClient.GetAsync($"https://www.pollen.com/api/forecast/extended/pollen/{zipCode}");
             var response = await result.Content.ReadAsStringAsync();
+            if (response.StartsWith("<"))
+            {
+                ErrorHelper.EmitError("Non-JSON response: " + response);
+            }
             return JsonConvert.DeserializeObject<PollenForecastResponse>(response);
         }
     }

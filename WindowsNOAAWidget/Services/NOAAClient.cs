@@ -29,6 +29,10 @@ namespace WindowsNOAAWidget.Services
             _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
             var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}");
             var response = await result.Content.ReadAsStringAsync();
+            if (response.StartsWith("<"))
+            {
+                ErrorHelper.EmitError("Non-JSON response: " + response);
+            }
             return JsonConvert.DeserializeObject<PointResponse>(response);
         }
 
@@ -38,6 +42,10 @@ namespace WindowsNOAAWidget.Services
             _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
             var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}/forecast");
             var response = await result.Content.ReadAsStringAsync();
+            if (response.StartsWith("<"))
+            {
+                ErrorHelper.EmitError("Non-JSON response: " + response);
+            }
             return JsonConvert.DeserializeObject<PointResponse>(response);
         }
 
@@ -49,6 +57,10 @@ namespace WindowsNOAAWidget.Services
                 _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(header));
                 var result = await _httpClient.GetAsync($"https://api.weather.gov/points/{lat},{lon}/forecast/hourly");
                 var response = await result.Content.ReadAsStringAsync();
+                if(response.StartsWith("<"))
+                {
+                    ErrorHelper.EmitError("Non-JSON response: " + response);
+                }
                 return JsonConvert.DeserializeObject<PointResponse>(response);
             }catch(Exception ex)
             {
@@ -64,7 +76,6 @@ namespace WindowsNOAAWidget.Services
             var result = await _httpClient.GetAsync($"https://api.weather.gov/zones?type=county");
             var response = await result.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<JObject>(response);
-
         }
 
         public async Task<Bitmap> GetImage(string url)

@@ -16,20 +16,35 @@ namespace WindowsNOAAWidget
     /// </summary>
     public partial class App : Application
     {
+        private static string _LogName = "crash-report.log";
         public App()
         {
             AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
             {
                 var ex = args.ExceptionObject as Exception;
-                File.WriteAllText("crash-report.log", $"{ex.Message}:{Environment.NewLine}{ex.StackTrace}");
-                ErrorHelper.EmitError(ex);
+                if (ex != null)
+                {
+                    File.WriteAllText(_LogName, $"{ex.Message}:{Environment.NewLine}{ex.StackTrace}");
+                }
+                else
+                {
+                    File.WriteAllText(_LogName, $"Exception not found.");
+                }
             };
 
-            AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
-            {
-                var ex = args.Exception;
-                ErrorHelper.EmitError(ex);
-            };
+            //AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
+            //{
+            //    if(args == null)
+            //    {
+            //        return;
+            //    }
+            //    if (args.Exception == null)
+            //    {
+            //        return;
+            //    }
+            //    var ex = args.Exception;
+            //    ErrorHelper.EmitError(ex);
+            //};
         }
     }
 }
