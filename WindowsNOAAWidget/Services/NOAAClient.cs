@@ -32,6 +32,7 @@ namespace WindowsNOAAWidget.Services
             if (response.StartsWith("<"))
             {
                 ErrorHelper.EmitError("Non-JSON response: " + response);
+                return null;
             }
             return JsonConvert.DeserializeObject<PointResponse>(response);
         }
@@ -45,6 +46,7 @@ namespace WindowsNOAAWidget.Services
             if (response.StartsWith("<"))
             {
                 ErrorHelper.EmitError("Non-JSON response: " + response);
+                return null;
             }
             return JsonConvert.DeserializeObject<PointResponse>(response);
         }
@@ -60,6 +62,7 @@ namespace WindowsNOAAWidget.Services
                 if(response.StartsWith("<"))
                 {
                     ErrorHelper.EmitError("Non-JSON response: " + response);
+                    return null;
                 }
                 return JsonConvert.DeserializeObject<PointResponse>(response);
             }catch(Exception ex)
