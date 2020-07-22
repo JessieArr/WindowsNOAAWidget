@@ -63,7 +63,16 @@
     <Compile Include="Geolocation\GeoDataImporter.cs" />
     <Compile Include="Geolocation\ZipCodeDetails.cs" />
     <Compile Include="Geolocation\ZipCodeInfo.cs" />
+    <Compile Include="Helpers\TemperatureHelper.cs" />
+    <Compile Include="Helpers\WindHelper.cs" />
     <Compile Include="Models\ApplicationOptions.cs" />
+    <Compile Include="Models\MetNo\Geometry.cs" />
+    <Compile Include="Models\MetNo\LocationForecast.cs" />
+    <Compile Include="Models\MetNo\LocationForecastInstant.cs" />
+    <Compile Include="Models\MetNo\LocationForecastInstantData.cs" />
+    <Compile Include="Models\MetNo\LocationForecastInstantDataDetails.cs" />
+    <Compile Include="Models\MetNo\LocationForecastInstantDataDetailsContainer.cs" />
+    <Compile Include="Models\MetNo\LocationForecastProperties.cs" />
     <Compile Include="Models\NOAA\ForecastPeriod.cs" />
     <Compile Include="Models\NOAA\PointProperties.cs" />
     <Compile Include="Models\NOAA\PointResponse.cs" />
@@ -73,9 +82,11 @@
     <Compile Include="Models\WeatherIconInfo.cs" />
     <Compile Include="Services\ErrorHelper.cs" />
     <Compile Include="Services\GeographyService.cs" />
+    <Compile Include="Services\MetNoClient.cs" />
     <Compile Include="Services\NOAAClient.cs" />
     <Compile Include="Services\OptionsService.cs" />
     <Compile Include="Services\PollenClient.cs" />
+    <Compile Include="Services\UserAgentHeaderValue.cs" />
     <Compile Include="Services\WeatherIconService.cs" />
     <Compile Include="Services\WindowsShortcutService.cs" />
     <Page Include="MainWindow.xaml">
@@ -142,5 +153,6 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

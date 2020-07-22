@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using WindowsNOAAWidget.Services;
 using Xunit;
 
-namespace WindowsNOAAWidget.Test.System
+namespace WindowsNOAAWidget.Test.SystemTests
 {
     public class PollenClientTests
     {

@@ -26,7 +26,8 @@ namespace WindowsNOAAWidget.Services
             var response = await result.Content.ReadAsStringAsync();
             if (response.StartsWith("<"))
             {
-                ErrorHelper.EmitError("Non-JSON response: " + response);
+                ErrorHelper.EmitError("Non-JSON response from Pollen API: " + response);
+                return null;
             }
             return JsonConvert.DeserializeObject<PollenForecastResponse>(response);
         }

@@ -31,20 +31,6 @@ namespace WindowsNOAAWidget
                     File.WriteAllText(_LogName, $"Exception not found.");
                 }
             };
-
-            //AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
-            //{
-            //    if(args == null)
-            //    {
-            //        return;
-            //    }
-            //    if (args.Exception == null)
-            //    {
-            //        return;
-            //    }
-            //    var ex = args.Exception;
-            //    ErrorHelper.EmitError(ex);
-            //};
         }
     }
 }

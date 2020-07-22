@@ -8,7 +8,9 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using WindowsNOAAWidget.Helpers;
 using WindowsNOAAWidget.Models;
+using WindowsNOAAWidget.Models.MetNo;
 using WindowsNOAAWidget.Models.NOAA;
 using WindowsNOAAWidget.Models.Pollen;
 using WindowsNOAAWidget.Services;
@@ -22,12 +24,14 @@ namespace WindowsNOAAWidget
     {
         private Timer _UpdateTimer;
         private NOAAClient _NOAAClient;
+        private MetNoClient _MetNoClient;
         private PollenClient _PollenClient;
         private OptionsService _OptionsService;
         private GeographyService _GeographyService;
         private ApplicationOptions _ApplicationOptions;
         private WeatherIconService _WeatherIconService;
         private string _MostRecentTemperature;
+        private bool UseMetNoAPI = true;
 
         private PollenForecastResponse _PollenForecast;
         private TimeSpan _PollenForecastLifetime = new TimeSpan(1, 0, 0);
@@ -42,6 +46,7 @@ namespace WindowsNOAAWidget
             _UpdateTimer.Enabled = true;
 
             _NOAAClient = new NOAAClient();
+            _MetNoClient = new MetNoClient();
             _PollenClient = new PollenClient();
             _OptionsService = new OptionsService();
             _ApplicationOptions = _OptionsService.LoadSavedOptions();
@@ -75,7 +80,7 @@ namespace WindowsNOAAWidget
                     if (_ApplicationOptions.SelectedZip != null && DateTime.Now > _PollenForecastExpires)
                     {
                         var pollenForecast = await _PollenClient.GetPollenDataForZip(_ApplicationOptions.SelectedZip.Zip);
-                        if (!pollenForecast.Location.Periods.Any())
+                        if (pollenForecast?.Location?.Periods == null || !pollenForecast.Location.Periods.Any())
                         {
                             return;
                         }
@@ -119,41 +124,79 @@ namespace WindowsNOAAWidget
                         _OptionsService.SaveOptions(_ApplicationOptions);
                     }
 
-                    var pointInfo = await _NOAAClient.GetHourlyForecastForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
-                    if (pointInfo == null || pointInfo.Properties == null)
+                    if(UseMetNoAPI)
                     {
-                        return;
-                    }
+                        var forecast = await _MetNoClient.GetWeatherInfoForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
+                        var next24Hours = forecast.properties.timeseries.Take(24);
 
-                    // Populate forecast
-                    var next24Hours = pointInfo.Properties.periods.Take(24);
-                    HourlyForecastStack.Children.Clear();
-                    HourlyForecastStack.Children.Add(GetGridHeader());
-                    foreach (var hour in next24Hours)
-                    {
-                        HourlyForecastStack.Children.Add(GetGridForForecastPeriod(hour));
-                    }
-
-                    var firstPeriod = pointInfo.Properties.periods[0];
-
-                    var temperature = firstPeriod.temperature.ToString();
-                    var forecastDescription = firstPeriod.shortForecast;
-                    var isDayTime = DateTime.Now.TimeOfDay.Hours > 7 && DateTime.Now.TimeOfDay.Hours < 19;
-                    // If the last temperature was different from this one, we update our icon and window title.
-                    if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
-                    {
-                        _MostRecentTemperature = temperature;
-
-                        var icon = _WeatherIconService.GetWeatherIcon(new WeatherIconInfo()
+                        HourlyForecastStack.Children.Clear();
+                        HourlyForecastStack.Children.Add(GetGridHeader());
+                        foreach (var hour in next24Hours)
                         {
-                            TemperatureInFarenheit = temperature,
-                            ForecastDescription = forecastDescription,
-                            IsDayTime = isDayTime
-                        });
+                            HourlyForecastStack.Children.Add(GetGridForLocationForecastInstant(hour));
+                        }
 
-                        this.Icon = icon;
-                        this.Title = $"{temperature}° - {forecastDescription}";
+                        var firstPeriod = forecast.properties.timeseries.First();
+
+                        var temperature = firstPeriod.data.instant.details.air_temperature;
+                        var temperatureFarenheit = TemperatureHelper.ConvertCentrigradeToFarenheit(temperature);
+                        var temperatureString = Math.Round(temperatureFarenheit).ToString();
+                        var forecastDescription = firstPeriod.data.next_1_hours["summary"]["symbol_code"].ToString();
+                        var isDayTime = DateTime.Now.TimeOfDay.Hours > 7 && DateTime.Now.TimeOfDay.Hours < 19;
+                        // If the last temperature was different from this one, we update our icon and window title.
+                        if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
+                        {
+                            _MostRecentTemperature = temperatureString;
+
+                            var icon = _WeatherIconService.GetWeatherIcon(new WeatherIconInfo()
+                            {
+                                TemperatureInFarenheit = temperatureString,
+                                ForecastDescription = forecastDescription,
+                                IsDayTime = isDayTime
+                            });
+
+                            this.Icon = icon;
+                            this.Title = $"{temperatureString}° - {forecastDescription}";
+                        }
                     }
+                    else
+                    {
+                        var pointInfo = await _NOAAClient.GetHourlyForecastForPoint(_ApplicationOptions.SelectedZip.Lat, _ApplicationOptions.SelectedZip.Lon);
+                        if (pointInfo == null || pointInfo.Properties == null)
+                        {
+                            return;
+                        }
+
+                        // Populate forecast
+                        var next24Hours = pointInfo.Properties.periods.Take(24);
+                        HourlyForecastStack.Children.Clear();
+                        HourlyForecastStack.Children.Add(GetGridHeader());
+                        foreach (var hour in next24Hours)
+                        {
+                            HourlyForecastStack.Children.Add(GetGridForForecastPeriod(hour));
+                        }
+
+                        var firstPeriod = pointInfo.Properties.periods[0];
+
+                        var temperature = firstPeriod.temperature.ToString();
+                        var forecastDescription = firstPeriod.shortForecast;
+                        var isDayTime = DateTime.Now.TimeOfDay.Hours > 7 && DateTime.Now.TimeOfDay.Hours < 19;
+                        // If the last temperature was different from this one, we update our icon and window title.
+                        if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
+                        {
+                            _MostRecentTemperature = temperature;
+
+                            var icon = _WeatherIconService.GetWeatherIcon(new WeatherIconInfo()
+                            {
+                                TemperatureInFarenheit = temperature,
+                                ForecastDescription = forecastDescription,
+                                IsDayTime = isDayTime
+                            });
+
+                            this.Icon = icon;
+                            this.Title = $"{temperature}° - {forecastDescription}";
+                        }
+                    }                    
                 }
                 catch (Exception ex)
                 {
@@ -236,6 +279,50 @@ namespace WindowsNOAAWidget
 
             var windLabel = new Label();
             windLabel.Content = $"{period.windDirection} {period.windSpeed}";
+            Grid.SetColumn(windLabel, 3);
+            newGrid.Children.Add(windLabel);
+
+            return newGrid;
+        }
+
+        private Grid GetGridForLocationForecastInstant(LocationForecastInstant instant)
+        {
+            var instantDetails = instant.data.instant.details;
+            var newGrid = new Grid();
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(80)
+            });
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(50)
+            });
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            newGrid.ColumnDefinitions.Add(new ColumnDefinition()
+            {
+                Width = new GridLength(80)
+            });
+
+            var timeLabel = new Label();
+            timeLabel.Content = instant.time.ToLocalTime().ToString("MM/dd htt");
+            Grid.SetColumn(timeLabel, 0);
+            newGrid.Children.Add(timeLabel);
+
+            var temperatureLabel = new Label();
+            var farenheitTemperature = TemperatureHelper.ConvertCentrigradeToFarenheit(instantDetails.air_temperature);
+            temperatureLabel.Content = Math.Round(farenheitTemperature, 1) + "°F";
+            Grid.SetColumn(temperatureLabel, 1);
+            newGrid.Children.Add(temperatureLabel);
+
+            var descriptionLabel = new Label();
+            descriptionLabel.Content = instant.data.next_1_hours["summary"]["symbol_code"];
+            Grid.SetColumn(descriptionLabel, 2);
+            newGrid.Children.Add(descriptionLabel);
+
+            var windLabel = new Label();
+            var windCardinality = WindHelper.GetWindDirectionFromDegrees(instantDetails.wind_from_direction);
+            var windSpeedInMPH = Math.Round(WindHelper.ConvertMetersPerSecondToMPH(instantDetails.wind_speed), 1);
+            windLabel.Content = $"{windCardinality} {windSpeedInMPH} MPH";
             Grid.SetColumn(windLabel, 3);
             newGrid.Children.Add(windLabel);
 
