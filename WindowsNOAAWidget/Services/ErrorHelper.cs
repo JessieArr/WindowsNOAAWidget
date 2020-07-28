@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
@@ -10,7 +11,7 @@ namespace WindowsNOAAWidget.Services
 
         public static void EmitError(string message)
         {
-            Dispatcher.CurrentDispatcher.Invoke(new Action(() =>
+            Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 ErrorLabel.Text = message;
             }));
@@ -18,7 +19,7 @@ namespace WindowsNOAAWidget.Services
 
         public static void EmitError(Exception ex)
         {
-            Dispatcher.CurrentDispatcher.Invoke(new Action(() =>
+            Application.Current.Dispatcher.Invoke(new Action(() =>
             {
                 ErrorLabel.Text = ex.Message + Environment.NewLine + ex.StackTrace;
             }));

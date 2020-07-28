@@ -67,8 +67,16 @@ namespace WindowsNOAAWidget
 
         private void _UpdateTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            GetWeatherForecast();
-            UpdatePollenForecast();
+            try
+            {                
+                GetWeatherForecast();
+                UpdatePollenForecast();
+                throw new Exception("Test exception");
+            }
+            catch (Exception ex)
+            {
+                ErrorHelper.EmitError($"Update error: {ex.Message}");
+            }
         }
 
         private void UpdatePollenForecast()
@@ -142,6 +150,7 @@ namespace WindowsNOAAWidget
                         var temperatureFarenheit = TemperatureHelper.ConvertCentrigradeToFarenheit(temperature);
                         var temperatureString = Math.Round(temperatureFarenheit).ToString();
                         var forecastDescription = firstPeriod.data.next_1_hours["summary"]["symbol_code"].ToString();
+                        var friendlyDescription = ForecastHelper.GetFriendlyStringFromForecast(forecastDescription);
                         var isDayTime = DateTime.Now.TimeOfDay.Hours > 7 && DateTime.Now.TimeOfDay.Hours < 19;
                         // If the last temperature was different from this one, we update our icon and window title.
                         if (string.IsNullOrEmpty(_MostRecentTemperature) || !String.Equals(_MostRecentTemperature, temperature))
@@ -151,12 +160,12 @@ namespace WindowsNOAAWidget
                             var icon = _WeatherIconService.GetWeatherIcon(new WeatherIconInfo()
                             {
                                 TemperatureInFarenheit = temperatureString,
-                                ForecastDescription = forecastDescription,
+                                ForecastDescription = friendlyDescription,
                                 IsDayTime = isDayTime
                             });
 
                             this.Icon = icon;
-                            this.Title = $"{temperatureString}° - {forecastDescription}";
+                            this.Title = $"{temperatureString}° - {friendlyDescription}";
                         }
                     }
                     else
@@ -315,7 +324,9 @@ namespace WindowsNOAAWidget
             newGrid.Children.Add(temperatureLabel);
 
             var descriptionLabel = new Label();
-            descriptionLabel.Content = instant.data.next_1_hours["summary"]["symbol_code"];
+            var forecastDescription = instant.data.next_1_hours["summary"]["symbol_code"].ToString();
+            var friendlyDescription = ForecastHelper.GetFriendlyStringFromForecast(forecastDescription);
+            descriptionLabel.Content = friendlyDescription;
             Grid.SetColumn(descriptionLabel, 2);
             newGrid.Children.Add(descriptionLabel);
 

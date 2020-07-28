@@ -63,6 +63,7 @@
     <Compile Include="Geolocation\GeoDataImporter.cs" />
     <Compile Include="Geolocation\ZipCodeDetails.cs" />
     <Compile Include="Geolocation\ZipCodeInfo.cs" />
+    <Compile Include="Helpers\ForecastHelper.cs" />
     <Compile Include="Helpers\TemperatureHelper.cs" />
     <Compile Include="Helpers\WindHelper.cs" />
     <Compile Include="Models\ApplicationOptions.cs" />
