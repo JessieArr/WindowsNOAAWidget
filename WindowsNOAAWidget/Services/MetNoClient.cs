@@ -27,7 +27,15 @@ namespace WindowsNOAAWidget.Services
             {
                 ErrorHelper.EmitError("Non-JSON response: " + response);
             }
-            return JsonConvert.DeserializeObject<LocationForecast>(response);
+            try
+            {
+                var deserialized = JsonConvert.DeserializeObject<LocationForecast>(response);
+                return deserialized;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Serialization error: " + Environment.NewLine + response);
+            }
         }
     }
 }

@@ -23,6 +23,16 @@ namespace WindowsNOAAWidget.Helpers
                     return "Light Rain";
                 case "heavyrain":
                     return "Heavy Rain";
+                case "fairday":
+                    return "Fair";
+                case "fairnight":
+                    return "Fair";
+                case "clearskynight":
+                    return "Clear Sky";
+                case "rainshowersday":
+                    return "Rain Showers";
+                case "lightrainshowersday":
+                    return "Light Rain Showers";
                 default:
                     return metNoForecast;
             }

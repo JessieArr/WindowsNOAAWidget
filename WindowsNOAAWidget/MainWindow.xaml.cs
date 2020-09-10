@@ -71,7 +71,6 @@ namespace WindowsNOAAWidget
             {                
                 GetWeatherForecast();
                 UpdatePollenForecast();
-                throw new Exception("Test exception");
             }
             catch (Exception ex)
             {
